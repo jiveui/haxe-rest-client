@@ -9,7 +9,7 @@ import haxe.io.BytesOutput;
  */
 class RestClient
 {
-    public static function postAsync(url:String, onData:String->Void = null, parameters:Map < String, String > = null, onError:String->Void = null):Void
+    public static function postAsync(url:String, onData:String->Void = null, parameters:Map < String, String > = null, onError:String->Void = null): Http
     {
         var r = RestClient.buildHttpRequest(
             url,
@@ -18,10 +18,11 @@ class RestClient
             onData,
             onError);
         r.request(true);
+        return r;
     }
-    
-    // No synchronous requests/sockets on Flash
-    #if !flash
+
+// No synchronous requests/sockets on Flash
+#if !flash
     public static function post(url:String, parameters:Map<String, String> = null, onError:String->Void = null):String
     {
         var result:String;
@@ -54,11 +55,12 @@ class RestClient
             onData,
             onError);
         r.request(false);
+        return r;
     }
-    
-    // No synchronous requests/sockets on Flash
-    #if !flash
-    public static function get(url:String, parameters:Map<String, String> = null, onError:String->Void = null):String
+
+// No synchronous requests/sockets on Flash
+#if !flash
+    public static function get(url:String, parameters:Map<String, String> = null, onError:String->Void = null, requestHeaders: Map<String, String> = null):String
     {
         var result:String;
 
@@ -71,46 +73,52 @@ class RestClient
                 result = data;
             },
             onError);
-        
-        // Use the existing http.request only if sys isn't present
-        #if sys
-            return makeSyncRequest(http, "GET");
-        #else
-            http.request(false);
-            return result;
-        #end
+
+        if (null != requestHeaders) {
+            for(key in requestHeaders.keys()) {
+                http.setHeader(key, requestHeaders.get(key));
+            }
+        }
+
+// Use the existing http.request only if sys isn't present
+#if sys
+        return makeSyncRequest(http, "GET");
+#else
+        http.request(false);
+        return result;
+#end
     }
-    #end
-    
-    #if sys
+#end
+
+#if sys
     private static function makeSyncRequest(http:Http, method:String = "GET"):String
     {
-        // TODO: SSL for HTTPS URLs
+// TODO: SSL for HTTPS URLs
         var output = new BytesOutput();
         http.customRequest(false, output, null, method);
         return output.getBytes()
-            .toString();
+        .toString();
     }
-    #end
-    
+#end
+
     private static function buildHttpRequest(url:String, parameters:Map<String, String> = null, async:Bool = false, onData:String->Void = null, onError:String->Void = null):Http
     {
         var http = new Http(url);
-            
-        #if js
+
+#if js
         http.async = async;
-        #end
-        
+#end
+
         if (onError != null)
         {
             http.onError = onError;
         }
-        
+
         if (onData != null)
         {
             http.onData = onData;
         }
-        
+
         if (parameters != null)
         {
             for (x in parameters.keys())
@@ -118,12 +126,12 @@ class RestClient
                 http.setParameter(x, parameters.get(x));
             }
         }
-        
-        #if flash
-        // Disable caching
+
+#if flash
+// Disable caching
         http.setParameter("_nocache", Std.string(Date.now().getTime()));
-        #end
-        
+#end
+
         return http;
     }
 }
