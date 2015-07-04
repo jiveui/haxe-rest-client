@@ -109,6 +109,7 @@ class RestClient
     private static function buildHttpRequest(url:String, parameters:Map<String, String> = null, async:Bool = false, onData:String->Void = null, onError:String->Void = null):Http
     {
         var http = new Http(url);
+        http.cnxTimeout = 120;
 
 #if js
         http.async = async;
