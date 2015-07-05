@@ -109,7 +109,9 @@ class RestClient
     private static function buildHttpRequest(url:String, parameters:Map<String, String> = null, async:Bool = false, onData:String->Void = null, onError:String->Void = null):Http
     {
         var http = new Http(url);
+#if cpp
         http.cnxTimeout = 120;
+#end
 
 #if js
         http.async = async;
