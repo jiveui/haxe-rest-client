@@ -110,7 +110,7 @@ class RestClient
     {
         var http = new Http(url);
 #if cpp
-        http.cnxTimeout = 120;
+        http.cnxTimeout = 180;
 #end
 
 #if js
