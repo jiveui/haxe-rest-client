@@ -9,7 +9,7 @@ import haxe.io.BytesOutput;
  */
 class RestClient
 {
-    public static function postAsync(url:String, onData:String->Void = null, parameters:Map < String, String > = null, onError:String->Void = null): Http
+    public static function postAsync(url:String, onData:String->Void = null, parameters:Map < String, String > = null, onError:String->Void = null, requestHeaders: Map<String, String> = null): Http
     {
         var r = RestClient.buildHttpRequest(
             url,
@@ -17,6 +17,11 @@ class RestClient
             true,
             onData,
             onError);
+        if (null != requestHeaders) {
+            for(key in requestHeaders.keys()) {
+                r.setHeader(key, requestHeaders.get(key));
+            }
+        }
         r.request(true);
         return r;
     }
