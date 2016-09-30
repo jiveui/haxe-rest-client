@@ -103,11 +103,16 @@ class RestClient
 #if sys
     private static function makeSyncRequest(http:Http, method:String = "GET"):String
     {
-// TODO: SSL for HTTPS URLs
+        #if openfl_ios_networking
+        http.request(null, method);
+        return http.responseData;
+        #else
+        // TODO: SSL for HTTPS URLs
         var output = new BytesOutput();
         http.customRequest(false, output, null, method);
         return output.getBytes()
         .toString();
+        #end
     }
 #end
 
